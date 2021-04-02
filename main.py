@@ -87,8 +87,11 @@ def run_epoch(data_iter, model, loss_compute):
 
 def main():
     V = 11
+    
     criterion = LabelSmoothing(size=V, padding_idx=0, smoothing=0.0)
     model = make_model(V, V, N=2)
+    print(model)
+
     model_opt = NoamOpt(model.src_embed[0].d_model, 1, 400,
             torch.optim.Adam(model.parameters(), lr=0, betas=(0.9, 0.98), eps=1e-9))
 
@@ -102,5 +105,4 @@ def main():
 
 if __name__ == "__main__":
     print(torch.__version__) # 1.7+
-    print(model)
     main()
