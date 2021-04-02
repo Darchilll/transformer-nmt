@@ -13,6 +13,8 @@ from generator import *
 from critirion import *
 from optimizer import *
 
+use_cuda = True
+
 def make_model(src_vocab, tgt_vocab, N=6, 
                d_model=512, d_ff=2048, h=8, dropout=0.1):
     "Helper: Construct a model from hyperparameters."
@@ -37,12 +39,18 @@ def make_model(src_vocab, tgt_vocab, N=6,
 
 def data_gen(V, batch, nbatches):
     "Generate random data for a src-tgt copy task."
+    global use_cuda 
     for i in range(nbatches):
         data = torch.from_numpy(np.random.randint(1, V, size=(batch, 10)))
         data[:, 0] = 1
         data.requires_grad = False
         src = data
         tgt = copy.deepcopy(data)
+
+        if use_cuda:
+            src = src.cuda()
+            tgt = tgt.cuda()
+
         yield Batch(src, tgt, 0)
 
 class Batch:
@@ -55,6 +63,10 @@ class Batch:
             self.trg_y = trg[:, 1:]
             self.trg_mask = \
                 self.make_std_mask(self.trg, pad)
+
+            if use_cuda:
+                self.trg_mask = self.trg_mask.cuda()
+
             self.ntokens = (self.trg_y != pad).data.sum()
     
     @staticmethod
@@ -86,14 +98,20 @@ def run_epoch(data_iter, model, loss_compute):
     return total_loss / total_tokens
 
 def main():
+    global use_cuda
+
     V = 11
     
     criterion = LabelSmoothing(size=V, padding_idx=0, smoothing=0.0)
     model = make_model(V, V, N=2)
-    print(model)
-
+    print(model)    
     model_opt = NoamOpt(model.src_embed[0].d_model, 1, 400,
             torch.optim.Adam(model.parameters(), lr=0, betas=(0.9, 0.98), eps=1e-9))
+
+    if use_cuda:
+        criterion = criterion.cuda()
+        model = model.cuda()
+        model_opt = model_opt.cuda()
 
     for epoch in range(10):
         model.train()
