@@ -110,7 +110,7 @@ def main():
     if use_cuda:
         criterion = criterion.cuda()
         model = model.cuda()
-        optimizer = model_opt.cuda()
+        optimizer = optimizer.cuda()
 
     model_opt = NoamOpt(model.src_embed[0].d_model, 1, 400, optimizer)
 
