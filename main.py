@@ -115,6 +115,7 @@ def main():
     model_opt = NoamOpt(model.src_embed[0].d_model, 1, 400, optimizer)
 
     for epoch in range(10):
+        print("Entering epoch : %d"%epoch)
         model.train()
         run_epoch(data_gen(V, 30, 20), model, 
                 SimpleLossCompute(model.generator, criterion, model_opt))
