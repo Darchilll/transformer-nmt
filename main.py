@@ -104,14 +104,15 @@ def main():
     
     criterion = LabelSmoothing(size=V, padding_idx=0, smoothing=0.0)
     model = make_model(V, V, N=2)
-    print(model)    
-    model_opt = NoamOpt(model.src_embed[0].d_model, 1, 400,
-            torch.optim.Adam(model.parameters(), lr=0, betas=(0.9, 0.98), eps=1e-9))
-
+    print(model)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0, betas=(0.9, 0.98), eps=1e-9)
+    
     if use_cuda:
         criterion = criterion.cuda()
         model = model.cuda()
-        model_opt = model_opt.cuda()
+        optimizer = model_opt.cuda()
+
+    model_opt = NoamOpt(model.src_embed[0].d_model, 1, 400, optimizer)
 
     for epoch in range(10):
         model.train()
