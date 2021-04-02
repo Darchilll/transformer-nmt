@@ -95,6 +95,7 @@ def run_epoch(data_iter, model, loss_compute):
                     (i, loss / batch.ntokens, tokens / elapsed))
             start = time.time()
             tokens = 0
+        torch.cuda.empty_cache()
     return total_loss / total_tokens
 
 def main():
@@ -110,7 +111,6 @@ def main():
     if use_cuda:
         criterion = criterion.cuda()
         model = model.cuda()
-        optimizer = optimizer.cuda()
 
     model_opt = NoamOpt(model.src_embed[0].d_model, 1, 400, optimizer)
 
